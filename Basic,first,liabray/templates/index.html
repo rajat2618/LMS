@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Library</title>
+</head>
+<body>
+
+<h1>📚 School Library</h1>
+
+<a href="/add">Add Book</a>
+
+<ul>
+    {% for book in books %}
+        <li>
+            {{ book.title }} - {{ book.author }}
+            
+            {% if book.available %}
+                (Available) 
+                <a href="/issue/{{ loop.index0 }}">Issue</a>
+            {% else %}
+                (Issued)
+                <a href="/return/{{ loop.index0 }}">Return</a>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>

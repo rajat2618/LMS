@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Library Management System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+{% if session.get('user_id') %}
+<div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h2>📚 Library</h2>
+            <p class="user-info">{{ session.get('username') }}</p>
+            {% if session.get('role') == 'admin' %}
+                <span class="badge badge-admin">Admin</span>
+            {% else %}
+                <span class="badge badge-student">Student</span>
+            {% endif %}
+        </div>
+
+        <nav class="sidebar-menu">
+            {% if session.get('role') == 'admin' %}
+                <a href="/manage-books" class="menu-item">
+                    <span class="icon">📥</span> Issue Books
+                </a>
+                <a href="/admin" class="menu-item">
+                    <span class="icon">📊</span> Dashboard
+                </a>
+                <a href="/users" class="menu-item">
+                    <span class="icon">👥</span> Users
+                </a>
+                <a href="/transactions" class="menu-item">
+                    <span class="icon">📋</span> Transactions
+                </a>
+            {% else %}
+                <a href="/dashboard" class="menu-item">
+                    <span class="icon">📚</span> My Books
+                </a>
+            {% endif %}
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="/logout" class="logout-btn">
+                <span class="icon">🚪</span> Logout
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+{% else %}
+<div class="auth-page">
+    {% block auth_content %}{% endblock %}
+</div>
+{% endif %}
+
+</body>
+</html>

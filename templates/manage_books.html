@@ -1,0 +1,186 @@
+{% extends "layout.html" %}
+
+{% block title %}Manage Books - Library Management System{% endblock %}
+
+{% block content %}
+
+<div class="section-header">
+    <h1>📚 Manage Book Issuance & Returns</h1>
+    <p style="color: #666; margin-top: 10px;">📌 Issue books to students and confirm returns here</p>
+</div>
+
+<!-- ISSUE NEW BOOK SECTION -->
+<section class="section" style="background: #f0f9ff; border: 2px solid #3b82f6;">
+    <h2>📥 Issue Book to Student</h2>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 15px; align-items: flex-end; margin-bottom: 20px;">
+        <div class="form-group">
+            <label for="student_select">👤 Select Student:</label>
+            <select id="student_select" class="form-control">
+                <option value="">-- Choose Student --</option>
+                {% for student in students %}
+                    <option value="{{ student[0] }}">{{ student[1] }} ({{ student[2] }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="book_select">📖 Select Book:</label>
+            <select id="book_select" class="form-control">
+                <option value="">-- Choose Book --</option>
+                {% for book in available_books %}
+                    <option value="{{ book[0] }}">{{ book[1] }} ({{ book[3] }} copies)</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="due_days">📅 Due Days:</label>
+            <input type="number" id="due_days" class="form-control" value="7" min="1" max="60">
+        </div>
+        
+        <button class="btn btn-primary" onclick="issueBook()" style="height: 40px; white-space: nowrap;">
+            📥 Issue Book
+        </button>
+    </div>
+    
+    <script>
+    function issueBook() {
+        const studentId = document.getElementById('student_select').value;
+        const bookId = document.getElementById('book_select').value;
+        
+        if (!studentId || !bookId) {
+            alert('Please select both student and book');
+            return;
+        }
+        
+        if (confirm('Issue this book to the student?')) {
+            window.location.href = `/issue/${bookId}?student_id=${studentId}`;
+        }
+    }
+    </script>
+</section>
+
+<!-- PENDING RETURNS SECTION -->
+<section class="section">
+    <h2 style="color: #ff6b6b;">⏳ Pending Return Requests</h2>
+    <p style="color: #666; font-size: 14px;">✓ Mark these books as confirmed returns after physically receiving them</p>
+
+    {% set pending = issued_books|selectattr('6', 'equalto', 'return_requested')|list %}
+    
+    {% if pending %}
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>👤 Student</th>
+                        <th>📚 Book</th>
+                        <th>📅 Issue Date</th>
+                        <th>📅 Due Date</th>
+                        <th>💰 Fine</th>
+                        <th>⚙️ Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for txn in pending %}
+                        <tr style="background-color: #fff3cd; border-left: 5px solid #ff9800;">
+                            <td><strong>{{ txn[1] }}</strong></td>
+                            <td>{{ txn[2] }}</td>
+                            <td>{{ txn[3] }}</td>
+                            <td>{{ txn[4] }}</td>
+                            <td><strong>₹{{ txn[5] }}</strong></td>
+                            <td>
+                                <a href="/confirm-return/{{ txn[0] }}" class="btn btn-success btn-xs" onclick="return confirm('Confirm return of this book?')">
+                                    ✅ Confirm Return
+                                </a>
+                                <a href="/reject-return/{{ txn[0] }}" class="btn btn-danger btn-xs" onclick="return confirm('Reject this return request?')">
+                                    ❌ Reject
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="empty-message">✓ No pending returns at the moment.</p>
+    {% endif %}
+</section>
+
+<!-- CURRENTLY ISSUED BOOKS SECTION -->
+<section class="section">
+    <h2>📤 Currently Issued Books</h2>
+    <p style="color: #666; font-size: 14px;">Active book loans to students</p>
+
+    {% set issued = issued_books|selectattr('6', 'equalto', 'issued')|list %}
+    
+    {% if issued %}
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>👤 Student</th>
+                        <th>📚 Book</th>
+                        <th>📅 Issue Date</th>
+                        <th>📅 Due Date</th>
+                        <th>⚙️ Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for txn in issued %}
+                        {% set due_date = txn[4]|string %}
+                        {% set is_overdue = due_date < now|string %}
+                        <tr style="{% if is_overdue %}background-color: #ffe5e5; border-left: 5px solid #ff6b6b;{% endif %}">
+                            <td><strong>{{ txn[1] }}</strong></td>
+                            <td>{{ txn[2] }}</td>
+                            <td>{{ txn[3] }}</td>
+                            <td>
+                                {{ txn[4] }}
+                                {% if is_overdue %}
+                                    <br><span class="badge badge-danger">⏰ OVERDUE</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="/return/{{ txn[0] }}" class="btn btn-warning btn-xs" onclick="return confirm('Mark as returned when student brings the book?')">
+                                    🔄 Mark Return Request
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="empty-message">No books currently issued.</p>
+    {% endif %}
+</section>
+
+<style>
+.form-group {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+</style>
+
+{% endblock %}
