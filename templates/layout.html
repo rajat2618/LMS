@@ -1,78 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Library Management System{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Harrow School LMS{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
 {% if session.get('user_id') %}
+
+<header class="top-header">
+  <div class="top-header-left">
+    <button class="mobile-toggle" id="menuToggle" aria-label="Menu">☰</button>
+    <div class="brand">
+      <div class="brand-icon">◇</div>
+      <div class="brand-text">
+        <strong>Harrow School</strong>
+        <small>Library Management System</small>
+      </div>
+    </div>
+  </div>
+  <div class="top-header-right">
+    <div class="header-user">
+      <div class="avatar">{{ session.get('username')[:1].upper() }}</div>
+      <span class="user-name">{{ session.get('username') }}</span>
+      {% if session.get('role') == 'admin' %}
+        <span class="badge badge-admin">Admin</span>
+      {% else %}
+        <span class="badge badge-student">Student</span>
+      {% endif %}
+    </div>
+    <a href="/logout" class="header-btn" title="Sign out">⏻</a>
+  </div>
+</header>
+
+<div class="overlay" id="overlay"></div>
+
 <div class="layout">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <h2>📚 Library</h2>
-            <p class="user-info">{{ session.get('username') }}</p>
-            {% if session.get('role') == 'admin' %}
-                <span class="badge badge-admin">Admin</span>
-            {% else %}
-                <span class="badge badge-student">Student</span>
-            {% endif %}
-        </div>
+  <aside class="sidebar" id="sidebar">
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      {% if session.get('role') == 'admin' %}
+        <a href="/manage-books" class="nav-item {% if request.path == '/manage-books' %}active{% endif %}">
+          <span class="nav-icon">⇄</span> Issue &amp; Returns
+        </a>
+        <a href="/admin" class="nav-item {% if request.path == '/admin' %}active{% endif %}">
+          <span class="nav-icon">⊞</span> Dashboard
+        </a>
+      {% else %}
+        <a href="/dashboard" class="nav-item {% if request.path == '/dashboard' %}active{% endif %}">
+          <span class="nav-icon">◐</span> Browse Books
+        </a>
+      {% endif %}
 
-        <nav class="sidebar-menu">
-            {% if session.get('role') == 'admin' %}
-                <a href="/manage-books" class="menu-item">
-                    <span class="icon">📥</span> Issue Books
-                </a>
-                <a href="/admin" class="menu-item">
-                    <span class="icon">📊</span> Dashboard
-                </a>
-                <a href="/users" class="menu-item">
-                    <span class="icon">👥</span> Users
-                </a>
-                <a href="/transactions" class="menu-item">
-                    <span class="icon">📋</span> Transactions
-                </a>
-            {% else %}
-                <a href="/dashboard" class="menu-item">
-                    <span class="icon">📚</span> My Books
-                </a>
-            {% endif %}
-        </nav>
+      <div class="nav-section-label">Management</div>
+      {% if session.get('role') == 'admin' %}
+        <a href="/users" class="nav-item {% if request.path == '/users' %}active{% endif %}">
+          <span class="nav-icon">◎</span> Users
+        </a>
+        <a href="/transactions" class="nav-item {% if request.path == '/transactions' %}active{% endif %}">
+          <span class="nav-icon">≡</span> Transactions
+        </a>
+      {% endif %}
+    </nav>
 
-        <div class="sidebar-footer">
-            <a href="/logout" class="logout-btn">
-                <span class="icon">🚪</span> Logout
-            </a>
-        </div>
-    </aside>
+    <div class="sidebar-footer">
+      <a href="/logout" class="nav-item">
+        <span class="nav-icon">←</span> Sign Out
+      </a>
+    </div>
+  </aside>
 
-    <!-- Main Content -->
-    <main class="main-content">
-        <div class="container">
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+  <main class="main-content">
+    <div class="page-container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
 
-            {% block content %}{% endblock %}
-        </div>
-    </main>
+      {% block content %}{% endblock %}
+    </div>
+  </main>
 </div>
+
+<script>
+const toggle = document.getElementById('menuToggle');
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('overlay');
+
+if (toggle && sidebar && overlay) {
+  toggle.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('show');
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+  });
+}
+</script>
 
 {% else %}
-<div class="auth-page">
-    {% block auth_content %}{% endblock %}
-</div>
+  {% block auth_content %}{% endblock %}
 {% endif %}
 
 </body>

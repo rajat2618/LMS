@@ -1,59 +1,155 @@
 {% extends "layout.html" %}
-
-{% block title %}Edit Book - Library Management System{% endblock %}
+{% block title %}Edit Book — Biblioteca{% endblock %}
 
 {% block content %}
-
-<div class="section-header">
-    <h1>✏️ Edit Book</h1>
-    <p class="subtitle">Book ID: {{ book.id }}</p>
+<div class="page-header">
+  <div>
+    <h1>Edit Book</h1>
+    <p>Book ID: {{ book.id }}</p>
+  </div>
 </div>
 
-<div class="form-container" style="max-width: 600px;">
-    <div class="card">
-        <form method="POST" class="edit-form">
-            <div class="form-group">
-                <label for="title">📚 Book Title</label>
-                <input type="text" id="title" name="title" value="{{ book.title }}" 
-                       placeholder="Enter book title" required>
-            </div>
-
-            <div class="form-group">
-                <label for="author">✍️ Author</label>
-                <input type="text" id="author" name="author" value="{{ book.author }}" 
-                       placeholder="Enter author name" required>
-            </div>
-
-            <div class="form-group">
-                <label for="isbn">📱 ISBN</label>
-                <input type="text" id="isbn" name="isbn" value="{{ book.isbn or '' }}" 
-                       placeholder="Enter ISBN (optional)">
-            </div>
-
-            <div class="form-group">
-                <label>📊 Total Copies</label>
-                <p style="padding: 10px; background: #f0f0f0; border-radius: 5px;">
-                    <strong>{{ book.total_copies }}</strong> (Cannot be changed)
-                </p>
-            </div>
-
-            <div class="form-group">
-                <label>✅ Available Copies</label>
-                <p style="padding: 10px; background: #f0f0f0; border-radius: 5px;">
-                    <strong>{{ book.available_copies }}</strong> (Cannot be changed)
-                </p>
-            </div>
-
-            <div class="form-actions">
-                <button type="submit" class="btn btn-success">
-                    ✅ Update Book
-                </button>
-                <a href="/admin" class="btn btn-secondary">
-                    ⬅️ Cancel
-                </a>
-            </div>
-        </form>
+<div class="card" style="max-width:700px;">
+  <form method="POST">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="title">Title</label>
+        <input type="text" id="title" name="title" class="form-control" value="{{ book.title }}" required>
+      </div>
+      <div class="form-group">
+        <label for="author">Author</label>
+        <input type="text" id="author" name="author" class="form-control" value="{{ book.author }}" required>
+      </div>
     </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="isbn">ISBN</label>
+        <input type="text" id="isbn" name="isbn" class="form-control" value="{{ book.isbn or '' }}">
+      </div>
+      <div class="form-group">
+        <label for="publisher">Publisher</label>
+        <input type="text" id="publisher" name="publisher" class="form-control" value="{{ book.publisher or '' }}">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="subject">Subject</label>
+        <select id="subject" name="subject" class="form-control">
+          {% for s in SUBJECTS %}<option value="{{ s }}" {% if book.subject == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="class_level">Class</label>
+        <select id="class_level" name="class_level" class="form-control" onchange="filterSubjects(this, document.getElementById('subject'))">
+          {% for c in CLASS_LEVELS %}<option value="{{ c }}" {% if book.class_level == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label for="stream">Stream</label>
+        <select id="stream" name="stream" class="form-control">
+          {% for s in STREAMS %}<option value="{{ s }}" {% if book.stream == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="book_type">Book Type</label>
+        <select id="book_type" name="book_type" class="form-control" onchange="toggleMag(this.value)">
+          {% for t in BOOK_TYPES %}<option value="{{ t }}" {% if book.book_type == t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="form-row" id="magRow" style="{% if book.book_type != 'Magazine' %}display:none;{% endif %}">
+      <div class="form-group">
+        <label for="magazine_name">Magazine Name</label>
+        <select id="magazine_name" name="magazine_name" class="form-control">
+          {% for m in MAGAZINE_TYPES %}<option value="{{ m }}" {% if book.magazine_name == m %}selected{% endif %}>{{ m }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group"></div>
+    </div>
+    <div class="card" style="margin-bottom:20px;padding:16px;background:var(--color-bg);border:1px solid var(--color-border);">
+      <h4 style="font-size:0.85rem;font-weight:600;margin-bottom:12px;color:var(--color-primary);">Shelf Location</h4>
+      <div class="form-row">
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="shelf_block">Block</label>
+          <input type="text" id="shelf_block" name="shelf_block" class="form-control" value="{{ book.shelf_block or '' }}" placeholder="e.g. A, B, C or Main, East...">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="shelf_row">Row</label>
+          <input type="text" id="shelf_row" name="shelf_row" class="form-control" value="{{ book.shelf_row or '' }}" placeholder="e.g. 1, 2, 3 or R1, R2...">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label for="shelf_column">Column</label>
+          <input type="text" id="shelf_column" name="shelf_column" class="form-control" value="{{ book.shelf_column or '' }}" placeholder="e.g. 1, 2, 3 or C1, C2...">
+        </div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Total Copies</label>
+        <p style="padding:10px 14px;background:var(--color-bg);border-radius:var(--radius-sm);"><strong>{{ book.total_copies }}</strong> (read-only)</p>
+      </div>
+      <div class="form-group">
+        <label>Available Copies</label>
+        <p style="padding:10px 14px;background:var(--color-bg);border-radius:var(--radius-sm);"><strong>{{ book.available_copies }}</strong> (read-only)</p>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-success">Update Book</button>
+      <a href="/admin" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
 </div>
 
+<script>
+var SUBJECTS_BY_CLASS = {{ SUBJECTS_BY_CLASS | tojson | safe }};
+var ALL_SUBJECTS = {{ SUBJECTS | tojson | safe }};
+
+function filterSubjects(classSelect, subjectSelect) {
+  var cls = classSelect.value;
+  var currentVal = subjectSelect.value;
+
+  subjectSelect.innerHTML = '<option value="">All</option>';
+
+  var subjects = cls && SUBJECTS_BY_CLASS[cls] ? SUBJECTS_BY_CLASS[cls] : ALL_SUBJECTS;
+  subjects.forEach(function(s) {
+    var opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s;
+    if (s === currentVal) opt.selected = true;
+    subjectSelect.appendChild(opt);
+  });
+}
+
+function toggleMag(val) {
+  document.getElementById('magRow').style.display = val === 'Magazine' ? 'flex' : 'none';
+}
+
+function toTitleCase(str) {
+  return str.split(/\s+/).filter(Boolean).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+}
+
+function formatISBN(str) {
+  return str.replace(/[^0-9X]/gi, '').replace(/(\d{3})(?=\d)/g, '$1-').replace(/-$/, '');
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('#title, #author, #publisher').forEach(el => {
+    el.addEventListener('blur', function() {
+      this.value = toTitleCase(this.value);
+    });
+  });
+  document.getElementById('isbn').addEventListener('blur', function() {
+    this.value = formatISBN(this.value);
+  });
+  document.querySelectorAll('#shelf_block, #shelf_row, #shelf_column').forEach(el => {
+    el.addEventListener('blur', function() {
+      this.value = this.value.toUpperCase().replace(/\s+/g, '');
+    });
+  });
+
+  filterSubjects(document.getElementById('class_level'), document.getElementById('subject'));
+});
+</script>
 {% endblock %}

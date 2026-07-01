@@ -1,70 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Library Management System</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — Harrow School LMS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="auth-body">
 
 <div class="auth-container">
-    <div class="auth-box">
-        <div class="auth-header">
-            <h1>📚 Library System</h1>
-            <p>School Library Management</p>
-        </div>
-
-        <div class="auth-form">
-            <h2>Create Account</h2>
-
-            {% if error %}
-                <div class="alert alert-error">
-                    <strong>Error:</strong> {{ error }}
-                </div>
-            {% endif %}
-
-            {% if success %}
-                <div class="alert alert-success">
-                    <strong>Success:</strong> {{ success }}
-                </div>
-            {% endif %}
-
-            <form method="POST" action="/register">
-                <div class="form-group">
-                    <label for="username">👤 Username</label>
-                    <input type="text" id="username" name="username" 
-                           placeholder="Choose a username" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="email">📧 Email</label>
-                    <input type="email" id="email" name="email" 
-                           placeholder="Enter your email" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="password">🔒 Password</label>
-                    <input type="password" id="password" name="password" 
-                           placeholder="Min 6 characters" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="confirm_password">🔒 Confirm Password</label>
-                    <input type="password" id="confirm_password" name="confirm_password" 
-                           placeholder="Confirm password" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block">
-                    Register →
-                </button>
-            </form>
-
-            <div class="auth-footer">
-                <p>Already have an account? <a href="/">Login here</a></p>
-            </div>
-        </div>
+  <div class="auth-box">
+    <div class="auth-crest">
+      <div class="crest-icon">◇</div>
+      <h1>Harrow School</h1>
+      <p>Library Management System</p>
     </div>
+
+    <h2>Create your account</h2>
+
+    {% if error %}
+      <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+    {% if success %}
+      <div class="alert alert-success">{{ success }}</div>
+    {% endif %}
+
+    <form method="POST" action="/register">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" class="form-control" placeholder="Choose a username" required>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" class="form-control" placeholder="you@school.edu" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" class="form-control" placeholder="Min 6 characters" required>
+        </div>
+        <div class="form-group">
+          <label for="confirm_password">Confirm Password</label>
+          <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Re-enter password" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+    </form>
+
+    <hr class="auth-divider">
+    <p style="font-size:0.85rem;text-align:center;color:var(--color-text-secondary);">
+      Already registered? <a href="/" style="color:var(--color-primary);font-weight:600;text-decoration:none;">Sign in</a>
+    </p>
+  </div>
 </div>
 
 </body>

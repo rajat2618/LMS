@@ -1,134 +1,144 @@
 {% extends "layout.html" %}
-
-{% block title %}Dashboard - Library Management System{% endblock %}
+{% block title %}My Books — Biblioteca{% endblock %}
 
 {% block content %}
-
-<div class="dashboard-header">
-    <h1>📚 My Dashboard</h1>
-    {% if overdue_count > 0 %}
-        <div class="alert alert-warning">
-            ⚠️ You have {{ overdue_count }} overdue book(s)! Please return them soon.
-        </div>
-    {% endif %}
+<div class="page-header">
+  <div>
+    <h1>My Books</h1>
+    <p>Browse and track your borrowed books</p>
+  </div>
 </div>
 
-<!-- QUICK STATS -->
-<div class="quick-stats">
-    <div class="stat-card">
-        <h3>📖 Available Books</h3>
-        <p class="stat-number">{{ books|length }}</p>
-    </div>
-    <div class="stat-card">
-        <h3>📤 Issued Books</h3>
-        <p class="stat-number">
-            {% set issued = transactions|selectattr('7', 'equalto', 'issued')|list %}
-            {{ issued|length }}
-        </p>
-    </div>
-    <div class="stat-card">
-        <h3>💰 Total Fine</h3>
-        <p class="stat-number">
-            ₹{{ transactions|selectattr('7', 'equalto', 'returned')|sum(attribute='6') }}
-        </p>
-    </div>
+{% if overdue_count > 0 %}
+<div class="alert alert-danger">
+  <strong>⚠ Overdue Alert!</strong> You have <strong>{{ overdue_count }}</strong> overdue book(s). Fine is ₹10 per day past due date. Return them immediately!
+</div>
+{% endif %}
+
+{% if due_soon_count > 0 %}
+<div class="alert alert-warning">
+  <strong>⏰ Due Soon!</strong> You have <strong>{{ due_soon_count }}</strong> book(s) due within 2 days. Return them on time to avoid fines.
+</div>
+{% endif %}
+
+<div class="stats-grid">
+  <div class="stat-card stat-card-primary">
+    <div><div class="stat-value">{{ books|length }}</div><div class="stat-label">Available Books</div></div>
+    <div class="stat-icon-bg" style="background:var(--color-info-bg);color:var(--color-info);">📚</div>
+  </div>
+  {% set issued_count = transactions|selectattr('status', 'equalto', 'issued')|list|length %}
+  <div class="stat-card stat-card-warning">
+    <div><div class="stat-value">{{ issued_count }}</div><div class="stat-label">Issued to me</div></div>
+    <div class="stat-icon-bg" style="background:var(--color-warning-bg);color:var(--color-warning);">📤</div>
+  </div>
+  {% set total_fine = transactions|selectattr('status', 'equalto', 'returned')|sum(attribute='fine') %}
+  <div class="stat-card stat-card-danger">
+    <div><div class="stat-value">₹{{ total_fine }}</div><div class="stat-label">Total Fine Paid</div></div>
+    <div class="stat-icon-bg" style="background:var(--color-danger-bg);color:var(--color-danger);">💰</div>
+  </div>
 </div>
 
-<!-- AVAILABLE BOOKS -->
-<section class="section">
-    <h2>📖 Available Books</h2>
-    <p style="color: #666; font-style: italic;">📌 To borrow a book, request the librarian at the desk.</p>
-    
-    {% if books %}
-        <div class="books-grid">
-            {% for book in books %}
-                <div class="book-card">
-                    <div class="book-header">
-                        <h3>{{ book[1] }}</h3>
-                        <small>by {{ book[2] }}</small>
-                    </div>
-                    
-                    <div class="book-info">
-                        <p><strong>ISBN:</strong> {{ book[5] or 'N/A' }}</p>
-                        <p><strong>Copies:</strong> {{ book[3] }}</p>
-                        <p><strong>Available:</strong> <span class="available">{{ book[4] }}</span></p>
-                    </div>
+<div class="section">
+  <div class="section-header">
+    <h2>Browse Books</h2>
+  </div>
 
-                    <div class="book-actions">
-                        <button class="btn btn-disabled btn-sm" disabled style="width: 100%; cursor: default;">
-                            {% if book[4] > 0 %}
-                                ✅ Available (Ask Librarian)
-                            {% else %}
-                                ❌ Not Available
-                            {% endif %}
-                        </button>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p class="empty-message">No books available</p>
-    {% endif %}
-</section>
+  <div class="card" style="margin-bottom:16px;">
+    <form method="GET" action="/dashboard" style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;">
+      <div class="form-group" style="margin-bottom:0;flex:1;min-width:140px;">
+        <label for="subject" style="font-size:0.8rem;">Subject</label>
+        <select id="subject" name="subject" class="form-control">
+          <option value="">All Subjects</option>
+          {% for s in SUBJECTS %}<option value="{{ s }}" {% if filters.subject == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;flex:1;min-width:120px;">
+        <label for="class_level" style="font-size:0.8rem;">Class</label>
+        <select id="class_level" name="class_level" class="form-control">
+          <option value="">All Classes</option>
+          {% for c in CLASS_LEVELS %}<option value="{{ c }}" {% if filters.class_level == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;flex:1;min-width:120px;">
+        <label for="book_type" style="font-size:0.8rem;">Type</label>
+        <select id="book_type" name="book_type" class="form-control">
+          <option value="">All Types</option>
+          {% for t in BOOK_TYPES %}<option value="{{ t }}" {% if filters.book_type == t %}selected{% endif %}>{{ t }}</option>{% endfor %}
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm" style="margin-bottom:1px;">Browse</button>
+      {% if filters.subject or filters.class_level or filters.book_type %}<a href="/dashboard" class="btn btn-outline btn-sm" style="margin-bottom:1px;">Clear</a>{% endif %}
+    </form>
+  </div>
 
-<!-- MY TRANSACTIONS -->
-<section class="section">
-    <h2>📋 My Book History</h2>
-    <p style="color: #666; font-style: italic;">📌 To return a book, submit it to the librarian at the desk.</p>
+  {% if books %}
+  <div class="books-grid">
+    {% for book in books %}
+    <div class="book-card">
+      <div class="book-card-top">
+        <h3>{{ book.title }}</h3>
+        <div class="book-author">{{ book.author }}</div>
+      </div>
+      <div class="book-card-body">
+        <p><strong>Subject:</strong> {{ book.subject }}</p>
+        <p><strong>Class:</strong> {{ book.class_level }} {% if book.stream != 'General' %}({{ book.stream }}){% endif %}</p>
+        <p><strong>Type:</strong> {{ book.book_type }}{% if book.magazine_name %} — {{ book.magazine_name }}{% endif %}</p>
+        <p><strong>ISBN:</strong> {{ book.isbn or '—' }}</p>
+        <p><strong>Copies available:</strong> <span class="badge badge-returned">{{ book.available_copies }}/{{ book.total_copies }}</span></p>
+      </div>
+      <div class="book-card-footer">
+        {% if book.available_copies > 0 %}
+        <span class="badge badge-returned">Available</span>
+        {% else %}
+        <span class="badge badge-issued">Checked out</span>
+        {% endif %}
+        <span class="text-muted text-sm">Issue period: 7 days</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state"><div class="empty-state-icon">📚</div><p>No books match your filters.</p></div>
+  {% endif %}
+</div>
 
-    {% if transactions %}
-        <div class="table-responsive">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>📚 Book</th>
-                        <th>📅 Issue Date</th>
-                        <th>📅 Due Date</th>
-                        <th>📅 Return Date</th>
-                        <th>💰 Fine</th>
-                        <th>📊 Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for txn in transactions %}
-                        <tr class="status-{{ txn[7]|lower }}">
-                            <td>
-                                <strong>{{ txn[1] }}</strong>
-                                <br><small>{{ txn[2] }}</small>
-                            </td>
-                            <td>{{ txn[3] }}</td>
-                            <td>
-                                {{ txn[5] }}
-                                {% if txn[7] == 'issued' and txn[5] %}
-                                    {% set due_date = txn[5]|string %}
-                                    {% if due_date < now|string %}
-                                        <br><span class="badge badge-danger">Overdue</span>
-                                    {% endif %}
-                                {% endif %}
-                            </td>
-                            <td>{{ txn[4] or '-' }}</td>
-                            <td>₹{{ txn[6] }}</td>
-                            <td>
-                                <span class="badge badge-{{ txn[7]|lower }}">
-                                    {% if txn[7] == 'return_requested' %}
-                                        🔄 PENDING RETURN
-                                    {% elif txn[7] == 'issued' %}
-                                        📤 ISSUED
-                                    {% elif txn[7] == 'returned' %}
-                                        ✅ RETURNED
-                                    {% else %}
-                                        {{ txn[7]|upper }}
-                                    {% endif %}
-                                </span>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <p class="empty-message">No transactions yet.</p>
-    {% endif %}
-</section>
-
+<div class="section">
+  <div class="section-header"><h2>My Transaction History</h2></div>
+  {% if transactions %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Book</th><th>Subject</th><th>Class</th><th>Issue Date</th><th>Due Date</th><th>Return Date</th><th>Fine</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for txn in transactions %}
+        <tr>
+          <td><strong>{{ txn.title }}</strong><br><span class="text-muted text-sm">{{ txn.author }}</span></td>
+          <td><span class="badge badge-student">{{ txn.subject }}</span></td>
+          <td>{{ txn.class_level }}</td>
+          <td>{{ txn.issue_date }}</td>
+          <td>
+            {{ txn.due_date }}
+            {% if txn.is_overdue %}<br><span class="badge badge-issued" style="background:var(--color-danger-bg);color:var(--color-danger);">🔴 Overdue</span>{% endif %}
+            {% if txn.due_soon %}<br><span class="badge badge-warning" style="background:var(--color-warning-bg);color:#b7950b;">⏰ Due soon</span>{% endif %}
+          </td>
+          <td>{{ txn.return_date or '—' }}</td>
+          <td>₹{{ txn.fine }}</td>
+          <td>
+            <span class="badge badge-{{ txn.status }}">
+              {% if txn.status == 'return_requested' %}Pending return
+              {% elif txn.status == 'issued' %}Issued
+              {% elif txn.status == 'returned' %}Returned
+              {% else %}{{ txn.status }}{% endif %}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><p>No transactions yet. Borrow a book from the librarian!</p></div>
+  {% endif %}
+</div>
 {% endblock %}

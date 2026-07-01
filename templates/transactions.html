@@ -1,110 +1,86 @@
 {% extends "layout.html" %}
-
-{% block title %}All Transactions - Library Management System{% endblock %}
+{% block title %}Transactions — Biblioteca{% endblock %}
 
 {% block content %}
-
-<div class="section-header">
-    <h1>📋 All Transactions</h1>
+<div class="page-header">
+  <div>
+    <h1>Transactions</h1>
+    <p>Complete borrowing history</p>
+  </div>
 </div>
 
-<!-- PENDING RETURNS SECTION -->
-<section class="section">
-    <h2 style="color: #ff6b6b;">⏳ Pending Return Requests</h2>
+<div class="card">
+  <div class="card-header"><h3>Filter by Status</h3></div>
+  <form method="GET" action="/transactions" style="display:flex;gap:10px;">
+    <select name="status" class="form-control" style="max-width:250px;">
+      <option value="">All Transactions</option>
+      <option value="issued" {% if status_filter == 'issued' %}selected{% endif %}>Issued</option>
+      <option value="return_requested" {% if status_filter == 'return_requested' %}selected{% endif %}>Pending Return</option>
+      <option value="returned" {% if status_filter == 'returned' %}selected{% endif %}>Returned</option>
+    </select>
+    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+    {% if status_filter %}<a href="/transactions" class="btn btn-outline btn-sm">Clear</a>{% endif %}
+  </form>
+</div>
 
-    {% set pending_returns = transactions|selectattr('7', 'equalto', 'return_requested')|list %}
-    
-    {% if pending_returns %}
-        <div class="table-responsive">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>👤 User</th>
-                        <th>📚 Book</th>
-                        <th>📅 Issue Date</th>
-                        <th>📅 Due Date</th>
-                        <th>💰 Fine</th>
-                        <th>⚙️ Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for txn in pending_returns %}
-                        <tr style="background-color: #fff3cd;">
-                            <td><strong>#{{ txn[0] }}</strong></td>
-                            <td>{{ txn[1] }}</td>
-                            <td>{{ txn[2] }}</td>
-                            <td>{{ txn[3] }}</td>
-                            <td>{{ txn[4] }}</td>
-                            <td><strong>₹{{ txn[6] }}</strong></td>
-                            <td>
-                                <a href="/confirm-return/{{ txn[0] }}" class="btn btn-success btn-xs" title="Confirm return">
-                                    ✅ Confirm
-                                </a>
-                                <a href="/reject-return/{{ txn[0] }}" class="btn btn-danger btn-xs" title="Reject return">
-                                    ❌ Reject
-                                </a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <p class="empty-message">No pending return requests.</p>
-    {% endif %}
-</section>
+<div class="section">
+  <div class="section-header"><h2>Pending Return Requests</h2></div>
+  {% set pending = transactions|selectattr('status', 'equalto', 'return_requested')|list %}
+  {% if pending %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>User</th><th>Book</th><th>Class</th><th>Issue</th><th>Due</th><th>Fine</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        {% for txn in pending %}
+        <tr style="background:var(--color-warning-bg);">
+          <td>{{ txn.id }}</td><td><strong>{{ txn.username }}</strong></td>
+          <td>{{ txn.title }} <span class="text-muted text-sm">({{ txn.subject }})</span></td>
+          <td>{{ txn.class_level or '—' }}</td>
+          <td>{{ txn.issue_date }}</td><td>{{ txn.due_date or '—' }}</td>
+          <td><strong>₹{{ txn.fine }}</strong></td>
+          <td class="actions-cell">
+            <a href="/confirm-return/{{ txn.id }}" class="btn btn-success btn-xs" onclick="return confirm('Confirm?')">Confirm</a>
+            <a href="/reject-return/{{ txn.id }}" class="btn btn-danger btn-xs" onclick="return confirm('Reject?')">Reject</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><p>No pending returns.</p></div>
+  {% endif %}
+</div>
 
-<!-- ALL TRANSACTIONS SECTION -->
-<section class="section">
-    <h2>📖 Transaction History</h2>
-
-    {% if transactions %}
-        <div class="table-responsive">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>👤 User</th>
-                        <th>📚 Book</th>
-                        <th>📅 Issue Date</th>
-                        <th>📅 Due Date</th>
-                        <th>📅 Return Date</th>
-                        <th>💰 Fine</th>
-                        <th>📊 Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for txn in transactions %}
-                        <tr class="status-{{ txn[7]|lower }}">
-                            <td>#{{ txn[0] }}</td>
-                            <td><strong>{{ txn[1] }}</strong></td>
-                            <td>{{ txn[2] }}</td>
-                            <td>{{ txn[3] }}</td>
-                            <td>{{ txn[4] or '-' }}</td>
-                            <td>{{ txn[5] or '-' }}</td>
-                            <td>₹{{ txn[6] }}</td>
-                            <td>
-                                <span class="badge badge-{{ txn[7]|lower }}">
-                                    {% if txn[7] == 'return_requested' %}
-                                        🔄 PENDING
-                                    {% elif txn[7] == 'issued' %}
-                                        📤 ISSUED
-                                    {% elif txn[7] == 'returned' %}
-                                        ✅ RETURNED
-                                    {% else %}
-                                        {{ txn[7]|upper }}
-                                    {% endif %}
-                                </span>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    {% else %}
-        <p class="empty-message">No transactions found.</p>
-    {% endif %}
-</section>
-
+<div class="section">
+  <div class="section-header"><h2>All Transactions</h2></div>
+  {% if transactions %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>User</th><th>Book</th><th>Subject</th><th>Class</th><th>Issue</th><th>Due</th><th>Return</th><th>Fine</th><th>Status</th></tr>
+      </thead>
+      <tbody>
+        {% for txn in transactions %}
+        <tr>
+          <td>{{ txn.id }}</td><td><strong>{{ txn.username }}</strong></td>
+          <td>{{ txn.title }}</td>
+          <td><span class="badge badge-student">{{ txn.subject }}</span></td>
+          <td>{{ txn.class_level or '—' }}</td>
+          <td>{{ txn.issue_date }}</td><td>{{ txn.due_date or '—' }}</td>
+          <td>{{ txn.return_date or '—' }}</td><td>₹{{ txn.fine }}</td>
+          <td><span class="badge badge-{{ txn.status }}">
+            {% if txn.status == 'return_requested' %}Pending{% elif txn.status == 'issued' %}Issued{% elif txn.status == 'returned' %}Returned{% else %}{{ txn.status }}{% endif %}
+          </span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><p>No transactions found.</p></div>
+  {% endif %}
+</div>
 {% endblock %}

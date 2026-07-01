@@ -1,58 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Library Management System</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Harrow School LMS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="auth-body">
 
 <div class="auth-container">
-    <div class="auth-box">
-        <div class="auth-header">
-            <h1>📚 Library System</h1>
-            <p>School Library Management</p>
-        </div>
-
-        <div class="auth-form">
-            <h2>Login</h2>
-
-            {% if error %}
-                <div class="alert alert-error">
-                    <strong>Error:</strong> {{ error }}
-                </div>
-            {% endif %}
-
-            <form method="POST" action="/">
-                <div class="form-group">
-                    <label for="username">📧 Username</label>
-                    <input type="text" id="username" name="username" placeholder="Enter your username" 
-                           required autofocus>
-                </div>
-
-                <div class="form-group">
-                    <label for="password">🔒 Password</label>
-                    <input type="password" id="password" name="password" 
-                           placeholder="Enter your password" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block">
-                    Login →
-                </button>
-            </form>
-
-            <div class="auth-footer">
-                <p>Don't have an account? <a href="/register">Register here</a></p>
-                <hr>
-                <p style="font-size: 12px; color: #666;">
-                    <strong>Demo Credentials:</strong><br>
-                    Username: <code>admin</code><br>
-                    Password: <code>admin123</code>
-                </p>
-            </div>
-        </div>
+  <div class="auth-box">
+    <div class="auth-crest">
+      <div class="crest-icon">◇</div>
+      <h1>Harrow School</h1>
+      <p>Library Management System</p>
     </div>
+
+    <h2>Sign in to your account</h2>
+
+    {% if error %}
+      <div class="alert alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" action="/">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+    </form>
+
+    <hr class="auth-divider">
+    <p style="font-size:0.85rem;text-align:center;color:var(--color-text-secondary);">
+      New here? <a href="/register" style="color:var(--color-primary);font-weight:600;text-decoration:none;">Create an account</a>
+    </p>
+    <hr class="auth-divider">
+    <div class="demo-note">
+      <strong>Demo access:</strong><br>
+      Username: <code>admin</code> &nbsp;/&nbsp; Password: <code>admin123</code>
+    </div>
+  </div>
 </div>
 
 </body>
