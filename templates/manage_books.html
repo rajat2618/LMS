@@ -1,19 +1,18 @@
 {% extends "layout.html" %}
-{% block title %}Issue & Returns — Biblioteca{% endblock %}
+{% block title %}Issue & Returns — Harrow School LMS{% endblock %}
+{% block header_title %}Issue & Returns{% endblock %}
 
 {% block content %}
 <div class="page-header">
-  <div>
-    <h1>Issue & Returns</h1>
-    <p>Issue books to students and confirm returns. Issue period: <strong>7 days</strong>. Late fine: <strong>₹10/day</strong></p>
-  </div>
+  <h1>Issue & Returns</h1>
+  <div class="subtitle">Issue books to students and confirm returns</div>
 </div>
 
 <div class="section">
   <div class="section-header"><h2>Issue Book to Student</h2></div>
   <div class="card">
     <div style="display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end;">
-      <div class="form-group" style="margin-bottom:0;">
+      <div class="form-group mb-0">
         <label for="student_select">Student</label>
         <select id="student_select" class="form-control">
           <option value="">— Select —</option>
@@ -22,7 +21,7 @@
           {% endfor %}
         </select>
       </div>
-      <div class="form-group" style="margin-bottom:0;">
+      <div class="form-group mb-0">
         <label for="book_select">Book</label>
         <select id="book_select" class="form-control">
           <option value="">— Select —</option>
@@ -33,7 +32,7 @@
       </div>
       <button class="btn btn-primary" onclick="issueBook()" style="white-space:nowrap;">Issue for 7 Days</button>
     </div>
-    <p class="text-muted text-sm mt-2">Due date will be set to 7 days from today. Late fine: ₹10/day.</p>
+    <p class="text-muted text-sm mt-2">Due date: 7 days from today. Late fine: ₹10/day.</p>
   </div>
 </div>
 
@@ -99,8 +98,8 @@
           <td>{{ txn.issue_date }}</td>
           <td>
             {{ txn.due_date }}
-            {% if txn.is_overdue %}<br><span class="badge badge-issued" style="background:var(--color-danger-bg);color:var(--color-danger);">🔴 Overdue</span>{% endif %}
-            {% if txn.due_soon %}<br><span class="badge badge-warning" style="background:var(--color-warning-bg);color:#b7950b;">⏰ Due soon</span>{% endif %}
+            {% if txn.is_overdue %}<br><span class="badge badge-issued" style="background:var(--color-danger-bg);color:var(--color-danger);">Overdue</span>{% endif %}
+            {% if txn.due_soon %}<br><span class="badge badge-return_requested">Due soon</span>{% endif %}
           </td>
           <td>
             <a href="/return/{{ txn.id }}" class="btn btn-warning btn-xs" onclick="return confirm('Mark as return requested?')">Mark Return</a>
@@ -117,8 +116,8 @@
 
 <script>
 function issueBook() {
-  const studentId = document.getElementById('student_select').value;
-  const bookId = document.getElementById('book_select').value;
+  var studentId = document.getElementById('student_select').value;
+  var bookId = document.getElementById('book_select').value;
   if (!studentId || !bookId) { alert('Select both student and book.'); return; }
   if (confirm('Issue this book for 7 days? Late fine: ₹10/day.')) {
     window.location.href = '/issue/' + bookId + '?student_id=' + studentId;

@@ -1,17 +1,16 @@
 {% extends "layout.html" %}
-{% block title %}Transactions — Biblioteca{% endblock %}
+{% block title %}Transactions — Harrow School LMS{% endblock %}
+{% block header_title %}Transactions{% endblock %}
 
 {% block content %}
 <div class="page-header">
-  <div>
-    <h1>Transactions</h1>
-    <p>Complete borrowing history</p>
-  </div>
+  <h1>Transactions</h1>
+  <div class="subtitle">Complete borrowing history</div>
 </div>
 
 <div class="card">
   <div class="card-header"><h3>Filter by Status</h3></div>
-  <form method="GET" action="/transactions" style="display:flex;gap:10px;">
+  <form method="GET" action="/transactions" class="flex flex-wrap items-center gap-2">
     <select name="status" class="form-control" style="max-width:250px;">
       <option value="">All Transactions</option>
       <option value="issued" {% if status_filter == 'issued' %}selected{% endif %}>Issued</option>
